@@ -3,6 +3,7 @@ package com.example.studentmanagement
 import android.os.Bundle
 import android.widget.*
 import androidx.activity.ComponentActivity
+import android.app.AlertDialog
 
 class MainActivity : ComponentActivity() {
 
@@ -21,7 +22,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Ánh xạ các view từ layout
         fullNameEditText = findViewById(R.id.full_name)
         studentCodeEditText = findViewById(R.id.student_code)
         addButton = findViewById(R.id.add_btn)
@@ -29,15 +29,12 @@ class MainActivity : ComponentActivity() {
         deleteButton = findViewById(R.id.delete_btn)
         studentListView = findViewById(R.id.data_list)
 
-        // Khởi tạo adapter cho ListView
         adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, studentList)
         studentListView.adapter = adapter
 
-        // Xử lý sự kiện khi chọn item trong ListView
         studentListView.setOnItemClickListener { _, _, position, _ ->
             selectedPosition = position
             val selectedStudent = studentList[position]
-            // Giả định định dạng "Họ tên - MSSV"
             val parts = selectedStudent.split(" - ")
             if (parts.size == 2) {
                 fullNameEditText.setText(parts[0])
@@ -45,43 +42,71 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        // Xử lý sự kiện nút Add
         addButton.setOnClickListener {
             val fullName = fullNameEditText.text.toString()
             val studentCode = studentCodeEditText.text.toString()
             if (fullName.isNotEmpty() && studentCode.isNotEmpty()) {
-                studentList.add("$fullName - $studentCode")
-                adapter.notifyDataSetChanged()
-                fullNameEditText.text.clear()
-                studentCodeEditText.text.clear()
+                AlertDialog.Builder(this)
+                    .setTitle("Xác nhận thêm")
+                    .setMessage("Bạn có muốn thêm sinh viên này?")
+                    .setPositiveButton("Thêm") { _, _ ->
+                        studentList.add("$fullName - $studentCode")
+                        adapter.notifyDataSetChanged()
+                        fullNameEditText.text.clear()
+                        studentCodeEditText.text.clear()
+                        Toast.makeText(this, "Đã thêm sinh viên", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Hủy", null)
+                    .show()
+            } else {
+                Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Xử lý sự kiện nút Update
         updateButton.setOnClickListener {
             if (selectedPosition >= 0) {
                 val fullName = fullNameEditText.text.toString()
                 val studentCode = studentCodeEditText.text.toString()
                 if (fullName.isNotEmpty() && studentCode.isNotEmpty()) {
-                    studentList[selectedPosition] = "$fullName - $studentCode"
-                    adapter.notifyDataSetChanged()
-                    fullNameEditText.text.clear()
-                    studentCodeEditText.text.clear()
-                    selectedPosition = -1
+                    AlertDialog.Builder(this)
+                        .setTitle("Xác nhận cập nhật")
+                        .setMessage("Bạn có muốn cập nhật thông tin sinh viên?")
+                        .setPositiveButton("Cập nhật") { _, _ ->
+                            studentList[selectedPosition] = "$fullName - $studentCode"
+                            adapter.notifyDataSetChanged()
+                            fullNameEditText.text.clear()
+                            studentCodeEditText.text.clear()
+                            selectedPosition = -1
+                            Toast.makeText(this, "Đã cập nhật sinh viên", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Hủy", null)
+                        .show()
+                } else {
+                    Toast.makeText(this, "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_SHORT).show()
                 }
+            } else {
+                Toast.makeText(this, "Vui lòng chọn sinh viên để cập nhật", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Xử lý sự kiện nút Delete
         deleteButton.setOnClickListener {
             if (selectedPosition >= 0) {
-                studentList.removeAt(selectedPosition)
-                adapter.notifyDataSetChanged()
-                fullNameEditText.text.clear()
-                studentCodeEditText.text.clear()
-                selectedPosition = -1
+                AlertDialog.Builder(this)
+                    .setTitle("Xác nhận xóa")
+                    .setMessage("Bạn có chắc muốn xóa sinh viên này?")
+                    .setPositiveButton("Xóa") { _, _ ->
+                        studentList.removeAt(selectedPosition)
+                        adapter.notifyDataSetChanged()
+                        fullNameEditText.text.clear()
+                        studentCodeEditText.text.clear()
+                        selectedPosition = -1
+                        Toast.makeText(this, "Đã xóa sinh viên", Toast.LENGTH_SHORT).show()
+                    }
+                    .setNegativeButton("Hủy", null)
+                    .show()
+            } else {
+                Toast.makeText(this, "Vui lòng chọn sinh viên để xóa", Toast.LENGTH_SHORT).show()
             }
         }
     }
 }
-
